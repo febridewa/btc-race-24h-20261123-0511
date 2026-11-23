@@ -13,11 +13,11 @@ Referral: `6etrfz79`
 
 A full-size round trip costs ~26–37 bps in fees, slippage and price impact, while 1-minute moves are only ~6 bps of noise — so the bot trades rarely (a handful of round trips a day) and only at deep, slow deviations. Momentum entries, trend filters and volatility-adaptive sizing were tested on the dev window and rejected: each one reduced PnL or robustness.
 
-## Results (dev window, kit `grade-local`, process driver)
+## Results (dev windows, kit `grade-local`, process driver)
 
-- Net PnL: **+$11.73**
-- Trades: 15, fees: $2.24, max drawdown: 0.68%
-- House baselines on the same window: buy-and-hold +$1.07, momentum +$2.45, ema-cross −$106.21, rsi-bollinger −$24.25, adx-momentum −$32.66, hold-cash $0.00
+- This race's dev window: net PnL **+$10.19**, 8 trades, max drawdown 0.28%
+- Previous race's dev window: net PnL **+$11.81**, 14 trades, max drawdown 0.67%
+- House baselines on the previous window: buy-and-hold +$1.07, momentum +$2.45, ema-cross −$106.21, rsi-bollinger −$24.25, adx-momentum −$32.66, hold-cash $0.00
 
 ## Layout
 

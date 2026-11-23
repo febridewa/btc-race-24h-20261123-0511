@@ -1,54 +1,57 @@
 // Deep-dip mean-reversion bot for make.fun btc-race-24h-20261123-0511.
 // Trades CBBTC/USDC on 1-minute on-chain bars, long only, $1,000 paper money.
 //
-// Why this strategy (measured with a fill-exact backtester on the published
-// 24h dev window of the previous race in this series, 1,440 bars):
+// Why this strategy (measured with a fill-exact backtester on two published
+// 24h dev windows — this race's and the previous race's — 1,440 bars each):
 // - The pool's price moves only when someone trades on it, so it tracks the
 //   wider BTC market with noise: 1-minute returns are ~6 bps of noise while a
 //   full-size round trip costs ~26-37 bps (4 bps fee + 2 bps modelled
 //   slippage + price impact against the pool's open depth). Fast
 //   trend-following therefore churns itself to death on this window: the
-//   kit's EMA-cross baseline lost $106, RSI/Bollinger $24, ADX $33, while
-//   buy-and-hold made $1.07. This bot trades rarely (a handful of round
-//   trips a day) and only at deep, slow deviations from a 6-hour mean.
-// - Signal: the z-score of log(close) against its rolling 360-bar (6h) mean
-//   and population standard deviation. Buy 50% of cash when z <= -1.75.
+//   kit's EMA-cross baseline lost $106, RSI/Bollinger $24, ADX $33 on the
+//   previous window, while buy-and-hold made $1.07 there. This bot trades
+//   rarely (a handful of round trips a day) and only at deep, slow
+//   deviations from an 8-hour mean.
+// - Signal: the z-score of log(close) against its rolling 480-bar (8h) mean
+//   and population standard deviation. Buy 50% of cash when z <= -1.5.
 //   Scale in with up to four adds of 50% of the remaining cash when the dip
 //   deepens (z <= -2.0, -2.25, -2.5, then -2.75): averaging down into a
 //   mean-reverting dip lowers the entry price. Sell the whole position when
 //   z >= +1.0, i.e. the price has come back through its mean and into
 //   strength.
-// - Two safety rails, both inert on the dev window (they never fired there):
-//   a 360-bar maximum hold, so a position that never reverts is cut instead
-//   of being carried to the end-of-window flatten, and a 10% equity
+// - Two safety rails, both inert on both dev windows (they never fired
+//   there): a 360-bar maximum hold, so a position that never reverts is cut
+//   instead of being carried to the end-of-window flatten, and a 10% equity
 //   drawdown guard that flattens the position if the account ever falls
 //   10% from its peak. They exist for the race window, which nobody has
-//   seen: they cap the worst case at the cost of nothing on the dev window.
-// - What was tried and rejected (same backtester, same window): a momentum
-//   leg (buying EMA breakouts) lost money in every quarter; a trend filter
-//   that skips entries after a sharp 60-minute fall blocked the best
-//   reversions and halved the PnL; volatility-adaptive sizing changed
-//   nothing; a 600-bar window concentrated all of the PnL in the first
-//   half of the window while the 360-bar window stayed positive in both
-//   halves (+$8.50 / +$3.39) and in three of four quarters (worst quarter
-//   $0.00, a quarter with no signal at all, not a loss).
+//   seen: they cap the worst case at the cost of nothing on the dev windows.
+// - What was tried and rejected (same backtester, both windows): a momentum
+//   leg (buying EMA breakouts) lost money in every quarter of the previous
+//   window; a trend filter that skips entries after a sharp 60-minute fall
+//   blocked the best reversions and halved the PnL; volatility-adaptive
+//   sizing changed nothing; a 360-bar window and a 600-bar window each
+//   scored less than the 480-bar window on the worse of the two windows.
 // - Deterministic: pure float64 arithmetic on the bars the harness sends, no
 //   clock, no environment, no randomness. Two runs on the same data decide
 //   the same orders.
 //
-// Dev-window backtest (fill-exact replica of the harness model, previous
-// race's dev window): net PnL +$11.73, 15 trades, max drawdown 0.68%.
-// House baselines on the same window: buy-and-hold +$1.07, momentum +$2.45,
+// Dev-window grades (kit grade-local, process driver):
+// - This race's dev window: net PnL +$10.19, 8 trades, max drawdown 0.28%.
+// - Previous race's dev window: net PnL +$11.81, 14 trades, max drawdown 0.67%.
+// The 480-bar window was chosen because it scored best on the worse of the
+// two windows (+$10.19 vs +$7.74 for 360 bars and +$9.78 for 600 bars), and
+// every 6-hour quarter of both windows ends at $0.00 or better.
+// House baselines on the previous window: buy-and-hold +$1.07, momentum +$2.45,
 // ema-cross -$106.21, rsi-bollinger -$24.25, adx-momentum -$32.66,
 // hold-cash $0.00.
 
 import { runBars, type Bar, type BarsState, type OrderInput } from './vendor/makefun-bars.ts';
 
 const SYMBOL = 'CBBTC';
-/** Rolling window for the mean and standard deviation, in 1-minute bars (6 hours). */
-const WIN_BARS = 360;
+/** Rolling window for the mean and standard deviation, in 1-minute bars (8 hours). */
+const WIN_BARS = 480;
 /** A bar's close must sit this many standard deviations under the mean to buy. */
-const Z_IN = -1.75;
+const Z_IN = -1.5;
 /** The z-score the position is sold at (price back through its mean, into strength). */
 const Z_OUT = 1.0;
 /** The z-score each scale-in add waits for, in order. */
