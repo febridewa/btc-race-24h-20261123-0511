@@ -1,13 +1,18 @@
 # BTC Race Bot — btc-race-24h-20261123-0511
 
+[![make.fun · btc-race-24h-20261123-0511](https://make.fun/badge/btc-race-24h-20261123-0511.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+[![rank](https://make.fun/badge/btc-race-24h-20261123-0511/febridewa/btc-race-24h-20261123-0511/rank.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+[![reward](https://make.fun/badge/btc-race-24h-20261123-0511/febridewa/btc-race-24h-20261123-0511/reward.svg)](https://make.fun/bounty/btc-race-24h-20261123-0511?utm_source=github&utm_medium=readme&utm_campaign=btc-race-24h-20261123-0511)
+
+
 A deep-dip mean-reversion bot for the [make.fun](https://make.fun/bounty/btc-race-24h-20261123-0511) competition "Race a BTC trading bot live for 24 hours". It trades Coinbase Wrapped BTC (cbBTC) against USDC on 1-minute on-chain prices with $1,000 of paper money — simulation only, no real money is traded.
 
 Referral: `6etrfz79`
 
 ## Strategy
 
-- **Signal:** z-score of log(close) vs a rolling 360-bar (6h) mean and standard deviation.
-- **Entry:** buy 50% of cash when z ≤ −1.75; scale in with up to four adds of 50% of remaining cash at z ≤ −2.0, −2.25, −2.5, −2.75.
+- **Signal:** z-score of log(close) vs a rolling 480-bar (8h) mean and standard deviation.
+- **Entry:** buy 50% of cash when z ≤ −1.5; scale in with up to four adds of 50% of remaining cash at z ≤ −2.0, −2.25, −2.5, −2.75.
 - **Exit:** sell the whole position when z ≥ +1.0.
 - **Safety rails:** 360-bar maximum hold and a 10% equity drawdown guard (both inert on the dev window; they cap the worst case on the unseen race window).
 
